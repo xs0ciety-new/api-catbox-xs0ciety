@@ -68,7 +68,6 @@ async function handler(req, res) {
       const result = await uploadToCatbox({
         file: blob,
         filename: uploaded.originalFilename || 'upload.bin',
-        userhash: process.env.CATBOX_USERHASH,
       });
 
       return res.status(result.success ? 200 : 502).json({
@@ -98,10 +97,7 @@ async function handler(req, res) {
         });
       }
 
-      const result = await uploadFromUrl({
-        url: body.url,
-        userhash: process.env.CATBOX_USERHASH,
-      });
+      const result = await uploadFromUrl({ url: body.url });
 
       return res.status(result.success ? 200 : 502).json({
         ...result,
