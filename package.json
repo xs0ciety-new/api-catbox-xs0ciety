@@ -1,5 +1,5 @@
 {
-  "name": "catbox-upload-api",
+  "name": "catbox-api-only",
   "version": "1.0.0",
   "private": true,
   "scripts": {
