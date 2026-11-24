@@ -6,7 +6,7 @@ wa.me/9779845668812
 
 const { formidable } = require('formidable');
 const fs = require('fs/promises');
-const { uploadToCatbox, uploadFromUrl } = require('../lib/catbox');
+const { uploadAuto, uploadFromUrl } = require('../lib/catbox');
 const {
   applyCors,
   verifyRequest,
@@ -33,7 +33,6 @@ async function handler(req, res) {
   const contentType = req.headers['content-type'] || '';
 
   try {
-    // ── Mode A: multipart upload ──
     if (contentType.includes('multipart/form-data')) {
       const form = formidable({
         maxFileSize: 200 * 1024 * 1024,
@@ -68,7 +67,7 @@ async function handler(req, res) {
         type: uploaded.mimetype || 'application/octet-stream',
       });
 
-      const result = await uploadToCatbox({
+      const result = await uploadAuto({
         file: blob,
         filename: uploaded.originalFilename || 'upload.bin',
       });
@@ -79,7 +78,6 @@ async function handler(req, res) {
       });
     }
 
-    // ── Mode B: JSON url upload ──
     if (contentType.includes('application/json')) {
       const chunks = [];
       for await (const c of req) chunks.push(c);
