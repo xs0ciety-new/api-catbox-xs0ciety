@@ -17,7 +17,6 @@ const {
 const config = { api: { bodyParser: false } };
 
 async function handler(req, res) {
-  // 1) CORS — hanya set header untuk origin yang diizinkan
   applyCors(req, res);
 
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -25,18 +24,16 @@ async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Gunakan POST.' });
   }
 
-  // 2) Origin + API Key check
   const authFail = verifyRequest(req);
   if (authFail) return res.status(authFail.status).json(authFail.body);
 
-  // 3) Rate limit
   const rlFail = rateLimit(req);
   if (rlFail) return res.status(rlFail.status).json(rlFail.body);
 
   const contentType = req.headers['content-type'] || '';
 
   try {
-    // ── Mode A: multipart file upload ──
+    // ── Mode A: multipart upload ──
     if (contentType.includes('multipart/form-data')) {
       const form = formidable({
         maxFileSize: 200 * 1024 * 1024,
@@ -51,11 +48,9 @@ async function handler(req, res) {
       if (!uploaded) {
         return res.status(400).json({
           success: false,
-          error: 'Field file wajib: gunakan name="file" di multipart.',
+          error: 'Field file wajib: name="file".',
         });
       }
-
-      // Validasi ekstensi
       if (!isExtensionAllowed(uploaded.originalFilename)) {
         return res.status(400).json({
           success: false,
@@ -85,7 +80,7 @@ async function handler(req, res) {
     // ── Mode B: JSON url upload ──
     if (contentType.includes('application/json')) {
       const chunks = [];
-      for await (const chunk of req) chunks.push(chunk);
+      for await (const c of req) chunks.push(c);
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}');
 
       if (!body.url || !/^https?:\/\//i.test(body.url)) {
