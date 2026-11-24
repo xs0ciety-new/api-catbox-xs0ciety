@@ -6,10 +6,10 @@ wa.me/9779845668812
 
 const { formidable } = require('formidable');
 const fs = require('fs/promises');
-const { uploadAuto, uploadFromUrl } = require('../lib/catbox');
+const { uploadToCatbox, uploadFromUrl } = require('../lib/catbox');
 const {
   applyCors,
-  verifyRequest,
+  verifyOrigin,
   isExtensionAllowed,
   rateLimit,
 } = require('../lib/security');
@@ -24,8 +24,8 @@ async function handler(req, res) {
     return res.status(405).json({ success: false, error: 'Gunakan POST.' });
   }
 
-  const authFail = verifyRequest(req);
-  if (authFail) return res.status(authFail.status).json(authFail.body);
+  const originFail = verifyOrigin(req);
+  if (originFail) return res.status(originFail.status).json(originFail.body);
 
   const rlFail = rateLimit(req);
   if (rlFail) return res.status(rlFail.status).json(rlFail.body);
@@ -47,10 +47,7 @@ async function handler(req, res) {
         : files.file || files.fileToUpload;
 
       if (!uploaded) {
-        return res.status(400).json({
-          success: false,
-          error: 'Field file wajib: name="file".',
-        });
+        return res.status(400).json({ success: false, error: 'Field file wajib: name="file".' });
       }
 
       if (!isExtensionAllowed(uploaded.originalFilename)) {
@@ -67,7 +64,7 @@ async function handler(req, res) {
         type: uploaded.mimetype || 'application/octet-stream',
       });
 
-      const result = await uploadAuto({
+      const result = await uploadToCatbox({
         file: blob,
         filename: uploaded.originalFilename || 'upload.bin',
       });
