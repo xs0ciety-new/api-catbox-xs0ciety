@@ -4,7 +4,7 @@ t.me/xs0cietyHUB
 wa.me/9779845668812
 */
 
-const formidable = require('formidable');
+const { formidable } = require('formidable');
 const fs = require('fs/promises');
 const { uploadToCatbox, uploadFromUrl } = require('../lib/catbox');
 const {
@@ -38,6 +38,8 @@ async function handler(req, res) {
       const form = formidable({
         maxFileSize: 200 * 1024 * 1024,
         multiples: false,
+        uploadDir: '/tmp',
+        keepExtensions: true,
       });
 
       const [, files] = await form.parse(req);
@@ -51,6 +53,7 @@ async function handler(req, res) {
           error: 'Field file wajib: name="file".',
         });
       }
+
       if (!isExtensionAllowed(uploaded.originalFilename)) {
         return res.status(400).json({
           success: false,
